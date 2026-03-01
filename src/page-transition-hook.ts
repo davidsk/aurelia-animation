@@ -1,26 +1,15 @@
 import { lifecycleHooks } from "aurelia";
-
-function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+import { INavigationOptions, IRouteViewModel, Params, RouteNode } from "@aurelia/router";
 
 @lifecycleHooks()
 export class PageTransitionHook {
 
-  private currentElement: HTMLElement;
-  private previousElement: HTMLElement;
+  private element: HTMLElement;
   private backwards = false;
 
   created(vm, controller): void {
-    if(this.currentElement){
-      this.previousElement = this.currentElement;
-    }
-    this.currentElement = controller.host;
-  }
-
-  loaded(vm, params, next, current, options) {
-    console.log("Loaded...");
-    console.log({ vm, params, next, current, options });
+    this.element = controller.host;
+    this.element.style.outline = '1px solid red';
   }
 
   loading(viewModel: IRouteViewModel,
@@ -34,8 +23,8 @@ export class PageTransitionHook {
   }
 
   async attaching(vm): Promise<Animation> {
-    console.log(`attaching: ${this.currentElement}`);
-    return await this.slideIn(this.currentElement, this.backwards ? 'left': 'right');
+    console.log(`attaching: ${this.element}`);
+    return await this.slideIn(this.element, this.backwards ? 'left': 'right');
   }
 
   unloading(viewModel: IRouteViewModel,
@@ -48,8 +37,8 @@ export class PageTransitionHook {
   }
  
   async detaching(vm): Promise<Animation> {
-    console.log(`detaching: ${this.currentElement}`);
-    return await this.slideOut(this.currentElement, this.backwards ? 'right' : 'left');
+    console.log(`detaching: ${this.element}`);
+    return await this.slideOut(this.element, this.backwards ? 'right' : 'left');
   }
 
   private slideIn(element: HTMLElement, from: 'left' | 'right'): Promise<Animation> {
