@@ -1,5 +1,36 @@
 import { lifecycleHooks } from "aurelia";
 import { INavigationOptions, IRouteViewModel, Params, RouteNode } from "@aurelia/router";
+import { animate, JSAnimation } from 'animejs';
+
+const libraryAnimateIn = (element) =>
+  animate(
+    element,
+    {
+      translateX: () => ['100%', '0%'],
+      duration: 1000,
+      easing: 'easeInOutQuart'
+  });
+
+const libraryAnimateOut = (element) =>
+  animate(
+    element,
+    {
+      translateX: () => ['0%', '100%'],
+      duration: 1000,
+      easing: 'easeInOutQuart',
+  });
+
+  const nativeAnimateIn = (element: HTMLElement) =>
+      element.animate([
+      { transform: `translateX(100%)` },
+      { transform: 'translateX(0)' }
+    ], { duration: 300, easing: 'ease-out', fill: 'forwards' }).finished;
+
+ const nativeAnimateOut = (element: HTMLElement) =>
+    element.animate([
+      { transform: 'translateX(0)' },
+      { transform: `translateX(-100%)` }
+    ], { duration: 300, easing: 'ease-in', fill: 'backwards' }).finished;
 
 @lifecycleHooks()
 export class PageTransitionHook {
@@ -22,9 +53,9 @@ export class PageTransitionHook {
     this.backwards = options.isBack;
   }
 
-  async attaching(vm): Promise<Animation> {
+  async attaching(vm): Promise<Animation | JSAnimation> {
     console.log(`attaching: ${this.element}`);
-    return await this.slideIn(this.element, this.backwards ? 'left': 'right');
+    return this.slideIn(this.element);
   }
 
   unloading(viewModel: IRouteViewModel,
@@ -36,31 +67,22 @@ export class PageTransitionHook {
     this.backwards = options.isBack;
   }
  
-  async detaching(vm): Promise<Animation> {
+  async detaching(vm): Promise<Animation | JSAnimation> {
     console.log(`detaching: ${this.element}`);
-    return await this.slideOut(this.element, this.backwards ? 'right' : 'left');
+    return this.slideOut(this.element);
   }
 
-  private slideIn(element: HTMLElement, from: 'left' | 'right'): Promise<Animation> {
-    const animation = element.children[0].animate([
-      { transform: `translateX(${from === 'left' ? '-' : ''}100%)` },
-      { transform: 'translateX(0)' }
-    ], { duration: 300, easing: 'ease-out', fill: 'forwards' });
+  private useLibrary = true;
 
-    return animation.finished;
+  private slideIn(element: HTMLElement): Promise<Animation | JSAnimation> {
+     return this.useLibrary
+      ? libraryAnimateIn(element.children[0]).then()
+      : nativeAnimateIn(element.children[0]);
   }
 
-  private slideOut(element: HTMLElement, to: 'left' | 'right'): Promise<Animation> {
-    const animation = element.children[0].animate([
-      { transform: 'translateX(0)' },
-      { transform: `translateX(${to === 'left' ? '-' : ''}100%)` }
-    ], { duration: 300, easing: 'ease-in', fill: 'forwards' });
-
-    animation.finished.then(() => {
-      // Clear the previous element's content after the animation completes
-      console.log(`Slide out animation finished for ${element}`);
-    })
-    
-    return animation.finished;
+  private slideOut(element: HTMLElement): Promise<Animation | JSAnimation> {
+    return this.useLibrary
+      ? libraryAnimateOut(element.children[0]).then()
+      : nativeAnimateOut(element.children[0]);
   }
 }   

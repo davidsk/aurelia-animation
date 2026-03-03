@@ -5,12 +5,12 @@ import { route } from '@aurelia/router';
     {
       path: ['', 'welcome'],
       component: import('./welcome-page'),
-      title: 'Welcome',
+      title: 'Welcome'
     },
     {
       path: 'about',
       component: import('./about-page'),
-      title: 'About',
+      title: 'About'
     },
   ],
 })
